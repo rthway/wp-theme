@@ -557,3 +557,200 @@ Let’s review everything that we’ve learned in this basic step by step WordPr
 -   **functions.php**  Allows you to to call functions, both PHP and built-in WordPress, and to define your own functions in order to change the default behaviors of WordPress
 
 So there you have it! We were able to create a fully functioning custom WordPress Theme with only 5 files. This gives us the foundation level knowledge to build more advanced WordPress themes and functions. Great Job!
+
+# How To Create A Custom Menu In WordPress
+Now that we know how to create a basic WordPress Theme from scratch, let’s take a look at how to create a custom navigation menu to our theme. This menu should have the ability to be controlled from the WordPress Dashboard. In other words, you should be able to go into the Dashboard and add or remove links to any pages, posts, or categories that you like. By the end of this tutorial, that is exactly what we will have. Let’s dig in and see how to accomplish this goal.
+
+----------
+
+## Open header.php
+
+Go ahead and open up the header.php file from the theme we have been working on. Our goal will be to add a menu that lives above the main site content but below the site name and tagline area. To do this, we can add the following code below:
+
+```php
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <title><?php bloginfo( 'name' ); ?></title>
+	<?php wp_head() ?>
+</head>
+
+<body <?php body_class(); ?>>
+<div class="container">
+    <header class="site-header">
+        <h1><a href="<?php echo home_url(); ?>"><?php bloginfo( 'name' ); ?></a></h1>
+        <h4><?php bloginfo( 'description' ); ?></h4>
+        <nav class="navigation-menu">
+			<?php wp_nav_menu() ?>
+        </nav>
+    </header>
+```
+
+
+
+Note that we make use of a special function provided to us by WordPress of  [wp_nav_menu()](https://developer.wordpress.org/reference/functions/wp_nav_menu/). This function takes care of all the legwork for you in building a custom menu. You don’t have to manually type out all of the html yourself, so this is quite helpful. Now we don’t have much in the way of pages just yet, but if we visit our test site, the function is already outputting a link to the sample page that exists on our install.  
+![wp_nav_menu output](https://vegibit.com/wp-content/uploads/2017/06/wp_nav_menu-output.png)
+
+### Passing Arguments to the wp_nav_menu() function
+
+Like most functions in WordPress, you can pass optional arguments to the wp_nav_menu() function. Here we will set up an array and configure just one option. We use an array in case we want to pass multiple options in the future. Here is how we might add that bit of code.
+
+```php
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <title><?php bloginfo( 'name' ); ?></title>
+	<?php wp_head() ?>
+</head>
+
+<body <?php body_class(); ?>>
+<div class="container">
+    <header class="site-header">
+        <h1><a href="<?php echo home_url(); ?>"><?php bloginfo( 'name' ); ?></a></h1>
+        <h4><?php bloginfo( 'description' ); ?></h4>
+        <nav class="navigation-menu">
+			<?php $args = [ 'theme_location' => 'primary' ]; ?>
+			<?php wp_nav_menu( $args ) ?>
+        </nav>
+    </header>
+```
+
+
+This option gives us a way to name certain menus in our theme. We might want to have more than one menu, and this is the method by which you can differentiate between multiple menus.
+
+### Register Menu Location in functions.php
+
+In order to make use of the menu we just created in our header.php file, from within the WordPress admin dashboard, we must register the menu location in the functions.php file of the theme. So how can we register our new menu with WordPress? We can do this with the  [register_nav_menus()](https://codex.wordpress.org/Function_Reference/register_nav_menus)  function built into WordPress. Let us register our menu like so.
+
+```php
+<?php
+
+function custom_theme_assets() {
+	wp_enqueue_style( 'style', get_stylesheet_uri() );
+}
+
+add_action( 'wp_enqueue_scripts', 'custom_theme_assets' );
+
+register_nav_menus( [ 'primary' => __( 'Primary Menu' ) ] );
+```
+
+
+
+### Configure our custom menu in WordPress Dashboard
+
+Our new menu should now be registered with WordPress core. WordPress is now aware of our menu, and it’s location in the theme. We can now go into the dashboard, create a new menu, and manage the location of it. Specifically, we want to make it appear where we made use of that wp_nav_menu() function. We are going to visit Appearance->Menus and then click on ‘create a new menu’.  
+![appearnance menus create a new menu](https://vegibit.com/wp-content/uploads/2017/06/appearnance-menus-create-a-new-menu.png)
+
+We can name this menu anything we like. We’ll just choose Main Menu to keep it easy, and then click on ‘Create Menu’.  
+![menu name main menu](https://vegibit.com/wp-content/uploads/2017/06/menu-name-main-menu.png)
+
+In this next step, we will link to all of our Categories. So we can choose Categories, Select All, update the Display location to ‘Primary Menu’, and then click on ‘Save Menu’. Let’s try it out.  
+![customize menu in appearance menus](https://vegibit.com/wp-content/uploads/2017/06/customize-menu-in-appearance-menus.gif)
+
+Visiting our site shows us that we are now getting a link to each category in the new menu we have created. It is only an unordered list at the moment, and is not the prettiest just yet – but it is working!  
+![linking to categories in primary menu](https://vegibit.com/wp-content/uploads/2017/06/linking-to-categories-in-primary-menu.png)
+
+----------
+
+## What is the Benefit of Registering your custom menu?
+
+I know, I know. You’re thinking it doesn’t even make sense to go through all of this hoopla just to get a few hyperlinks to some categories to display on your site. In some ways, you’re right. Why not just manually build some of these things yourself. Sure, that can be done, but when we build out our menu like we did here, we now have the power of the WordPress Dashboard to control the code we have included in our theme. We can now easily drag and drop link ordering among other things right from the Dashboard. Let’s change up the ordering from WordPress, PHP, JavaScript to JavaScript, WordPress, and then PHP. Very easy!  
+![reorder custom menu from wordpress dashboard](https://vegibit.com/wp-content/uploads/2017/06/reorder-custom-menu-from-wordpress-dashboard.gif)
+
+Now when you visit the site, the order of the links in the menu are updated. No messing with the underlying code is required with this approach.  
+![newly ordered menu](https://vegibit.com/wp-content/uploads/2017/06/newly-ordered-menu.png)
+
+----------
+
+## Style that custom menu
+
+That unordered list is just not going to cut it! We need to make things a little more slick than that. Let’s spend a little bit of time applying some custom CSS to clean that menu up a bit. First off, we want to turn the vertically oriented unordered list into a horizontally oriented menu. We’d also like to remove the bullet points of each list element, add some padding and margin, as well as remove the underline for links. Here is a stab at creating that effect in our style.css file.
+
+```css
+/* Nav Menu */
+.navigation-menu ul {
+    margin: 0;
+    padding: 0;
+}
+
+.navigation-menu ul:before, .navigation-menu ul:after {
+    content: "";
+    display: table;
+}
+
+.navigation-menu ul:after {
+    clear: both;
+}
+
+.navigation-menu ul {
+    *zoom: 1
+}
+
+.navigation-menu ul li {
+    list-style: none;
+    float: left;
+    margin-right: 3px;
+}
+
+.navigation-menu ul li a:link,
+.navigation-menu ul li a:visited {
+    display: block;
+    padding: 12px 17px;
+    border: 2px solid #ecf0f1;
+    border-bottom: none;
+    text-decoration: none;
+}
+```
+
+
+There is kind of a lot happening in the CSS listed above. Let’s go through it. In the first .navigation-menu ul selector, we are removing all padding and margin from the unordered list. Next we are making sure that the unordered list will clear the floats of the list item children. In the .navigation-menu ul li selector, we remove the bullets from the list, float the list items to the left, and add a little margin on the right. At the end, we target the links. First we turn them into block level elements with a padding of 12px vertical and 17px horizontal. We add a nice border effect and remove the underline on the links. Let’s check it out in the browser now.  
+![basic css styling of custom menu](https://vegibit.com/wp-content/uploads/2017/06/basic-css-styling-of-custom-menu.gif)  
+Nice! That menu is looking a lot better than it initially did.
+
+----------
+
+### How to add a custom color on hover to the menu
+
+The basic styling ins in place. It might be nice to have a bit of a hover effect when one moves the mouse over each link. This is very easy to configure using the following snippet:
+
+```css
+.navigation-menu ul li a:hover {
+    background-color: #ebf5fb;
+}
+```
+
+CSS
+
+Copy
+
+![hover effect for list item in action](https://vegibit.com/wp-content/uploads/2017/06/hover-effect-for-list-item-in-action.gif)  
+That looks pretty good!
+
+----------
+
+### How to target the Active State of a menu item
+
+Another thing we might like to add is the ability to customize the color of an active link. This is different from the simple hover effect. In this case, when we visit a particular link from the menu, we want WordPress to be aware that this is now the active page being viewed and to update the visual representation to reflect the active link. To do this we can make use of a special class that is built into WordPress to address this very thing. This is the current-menu-item class. Here is how we can incorporate it into our custom menu.
+
+```css
+.navigation-menu ul li.current-menu-item a:link,
+.navigation-menu ul li.current-menu-item a:visited {
+    background-color: #4285f4;
+    color: #ffffff;
+}
+```
+
+
+
+If we visit our site now and test out visiting the various links in the custom menu, we can see it looks very nice. We now have a particular look for the hover state, and a different look for the active state of the links in our menu. This is a great way to make sure your site visitors know where they currently are by keeping the active menu lit up so to speak.  
+![active state vs hover state menu li](https://vegibit.com/wp-content/uploads/2017/06/active-state-vs-hover-state-menu-li.gif)
+
+----------
+
+### How To Create A Custom Menu In WordPress Summary
+
+In this tutorial, we had a good look at how to add a custom menu to our custom theme in WordPress. We made use of a few WordPress functions to help us along. The first one we made use of was wp_nav_menu(). This function can automatically build an unordered list and children elements to create the structure for a nice menu that you can apply styling to. There are many arguments that you can pass to this function, but we just focused on the basics here. The next function we made use of was the register_nav_menus() function. This function allows us to tell WordPress about our new menu and to hook into it in the WordPress Dashboard. Once our new menu was registered with WordPress, we found that it was easy to add or remove anything we like from that menu, right from the WordPress dashboard and with no need to edit any code in our theme files. Finally, we took some time to improve the look of our menu by using some custom CSS styling.
