@@ -75,3 +75,8 @@ article.post:last-of-type {
     border-bottom: none;
     text-decoration: none;
 }
+
+/* Page templates */
+.page-layout h2 {
+    font-size: 200%;
+}
