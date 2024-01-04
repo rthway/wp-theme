@@ -754,3 +754,275 @@ If we visit our site now and test out visiting the various links in the custom m
 ### How To Create A Custom Menu In WordPress Summary
 
 In this tutorial, we had a good look at how to add a custom menu to our custom theme in WordPress. We made use of a few WordPress functions to help us along. The first one we made use of was wp_nav_menu(). This function can automatically build an unordered list and children elements to create the structure for a nice menu that you can apply styling to. There are many arguments that you can pass to this function, but we just focused on the basics here. The next function we made use of was the register_nav_menus() function. This function allows us to tell WordPress about our new menu and to hook into it in the WordPress Dashboard. Once our new menu was registered with WordPress, we found that it was easy to add or remove anything we like from that menu, right from the WordPress dashboard and with no need to edit any code in our theme files. Finally, we took some time to improve the look of our menu by using some custom CSS styling.
+
+# How To Create Custom Templates For WordPress Pages
+[![How to Control the Look of Pages in WordPress With Pagephp](https://vegibit.com/wp-content/uploads/2017/06/How-to-Control-the-Look-of-Pages-in-Wordpress-With-Pagephp.png)](https://vegibit.com/how-to-create-custom-templates-for-wordpress-pages/)
+
+Our adventures into this theme tutorial for WordPress is working out great so far. Of course, our current theme is a very basic example of what you can do when creating a WordPress theme from scratch. As we know, it is the index.php file that is handling most of the heavy lifting with regard to HTML generation on our posts and pages at this time. Wouldn’t it be nice if we had a way to change up the look of our pages in WordPress so as to easily differentiate them from normal posts in our theme? It turns out there is in fact an easy way to do this, and we do so by making use of the  **page.php**  file in our theme. Let’s examine how to work with this file in this tutorial.
+
+----------
+
+### What are pages for in WordPress?
+
+By default WordPress allows you to post content to your website in the form of either a post or a page. They are similar but different. What sets them apart is that a page in WordPress is a way to publish content that is not part of the normal blog stream so to speak. When you publish a page, it does not appear at the top of your site as the first entry like a normal blog post would. Pages are often used for content such as an “About Us” page, or a “Contact Us” page.
+
+----------
+
+### index.php vs page.php in WordPress
+
+Our current theme does not yet have a page.php file, yet we can still view the example pages in our browser. How does this happen?  
+![viewing wordpress pages using index-php](https://vegibit.com/wp-content/uploads/2017/06/viewing-wordpress-pages-using-index-php.gif)  
+This is interesting. We are clearly able to visit a couple of example pages on our site, but there is not yet a page.php file. It turns out, the page.php file is not mandatory to create a basic theme. If this file is not present, your pages will simply use the index.php file to render output to the browser. The page.php file comes into play when you want to customize the look and layout of pages on your WordPress site. If the page.php file is present, WordPress will use the code in that file instead of index.php to render the page.
+
+----------
+
+#### Create your page.php file
+
+Go ahead and now create a new file in your theme folder named page.php. With this file in place, WordPress will no longer use index.php to render a page, but page.php. Think of page.php as a way to override the default output of index.php. So with our page.php now created, we can add some code to that file to control how it displays pages. We can start by simply including the get_header() function, as any post or page is going to need this. We’ll then test this out.
+
+**page.php**
+
+```php
+<?php
+
+get_header();
+```
+
+
+
+![using get_header function on page-php](https://vegibit.com/wp-content/uploads/2017/06/using-get_header-function-on-page-php.png)  
+This is pretty cool! We can really get an idea of what that get_header() function is doing for us here. The content of the page is not displayed however that call to get_header() outputs all of the information we have included in header.php such as the site name, tagline, and of course the navigation menu that we have been building.
+
+----------
+
+### Outputting Page Content
+
+How can we actually output the content of our pages now? Well, this would work just like it does with posts. We have to make use of the WordPress Loop. In other words, we follow the standard protocol of: “If have posts, while have posts, the post”. So now we can include this markup, similar to index.php but just a bit different below:
+
+```php
+<?php
+
+get_header();
+
+if ( have_posts() ) :
+	while ( have_posts() ) : the_post(); ?>
+
+        <article class="page-layout">
+            <h2><?php the_title() ?></h2>
+			<?php the_content() ?>
+        </article>
+	
+	<?php endwhile;
+
+else :
+	echo '<p>There are no pages!</p>';
+endif;
+
+get_footer();
+
+?>
+
+```
+
+
+
+So what have we changed? Well, it’s pretty simple really. We removed the link from the title of the page. In addition to that, we assigned a special class name to the article of page-layout. That means we can now target content from pages differently than we would for posts. So let’s go ahead and add some styling to our style.css file so that our page looks a bit different than our posts.
+
+```css
+.page-layout h2 {
+    font-size: 200%;
+}
+```
+
+
+
+Voila! We can see the pages now have no link for the title text, in addition to that text being larger.  
+![custom page output wordpress](https://vegibit.com/wp-content/uploads/2017/06/custom-page-output-wordpress.png)
+
+----------
+
+### Using Conditional Logic To Customize The Header of a Page
+
+Both our pages and posts make use of the same header.php file when rendering. That is to say, we see the same site name, site tagline, and navigation menu whether we are on a post or a page. What if we would like to be able to customize the look of what is in the header only if we are visiting a page. It turns out we can do that! What we will do is to make use of the  [is_page()](https://developer.wordpress.org/reference/functions/is_page/)  function to see if the current query is for a page. Let’s modify our header.php file like we see here:
+
+```markup
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <title><?php bloginfo( 'name' ); ?></title>
+	<?php wp_head() ?>
+</head>
+
+<body <?php body_class(); ?>>
+<div class="container">
+    <header class="site-header">
+        <h1><a href="<?php echo home_url(); ?>"><?php bloginfo( 'name' ); ?></a></h1>
+        <h4><?php bloginfo( 'description' ); ?></h4>
+        <nav class="navigation-menu">
+			<?php $args = [ 'theme_location' => 'primary' ]; ?>
+			<?php wp_nav_menu( $args ) ?>
+        </nav>
+    </header>
+	<?php if(is_page()) : ?>
+        <h3>Thanks for visiting our page!</h3>
+	<?php endif ?>
+```
+
+
+
+So what we are doing here is setting up some conditional logic for WordPress to act on based on whether a test is true or false. The is_page() function is going to return true if we are making a query to a specific page. If that is the case, the message of  _Thanks for visiting our page!_  will appear. If we are visiting a post or category, however, that message should not appear. Let’s try it out here.  
+![conditional logic in wordpress pages](https://vegibit.com/wp-content/uploads/2017/06/conditional-logic-in-wordpress-pages.gif)
+
+----------
+
+#### Targeting One Specific Page Via Conditional Logic
+
+That was really cool how we make use of conditional logic in the prior example to customize header output based on if we were on a page or not. We can take this concept further by targeting not only a page that is an actual page, but by targeting a page that has a specific slug or id. Meaning what if we want to see our message on the “About Us” page but not on the “WordPress Example Page” page. This is easy. We just pass in the slug or id of the page we are trying to target. Let’s pass in ‘about-us’ to the is_page() function and see what happens. We will update our code like so:
+
+```markup
+	<?php if(is_page( 'about-us' )) : ?>
+        <h3>Thanks for visiting our page!</h3>
+	<?php endif ?>
+```
+
+
+
+Now it looks like this is working perfectly!  
+![passing slug to is_page function](https://vegibit.com/wp-content/uploads/2017/06/passing-slug-to-is_page-function.gif)
+
+----------
+
+### Creating A Custom Page Template With page-_slug-of-page.php_
+
+There might be times when conditional logic is not the best choice for customizing your page. What if you want an entirely different layout for a specific page, but only for one specific page. You don’t want these radical changes to apply to all pages on your site, just one. You can do that by creating a new file with the format of page-_slug-of-page.php_. So for example, let’s imagine we want a whole new layout just for the “About Us” page. We can create a new file in our theme named  **page-about-us.php**. We will change the layout to make use of a table for our content. We’ll place the title on the left of the page, and the content on the right by making use of tables. Let’s try it out.  
+**  
+page-about-us.php**
+
+```markup
+<?php
+
+get_header();
+
+if ( have_posts() ) :
+	while ( have_posts() ) : the_post(); ?>
+
+        <article class="page-layout">
+            <table border="0" width="100%">
+                <tr>
+                    <td width="30%"><h2><?php the_title() ?></h2></td>
+                    <td><?php the_content() ?></td>
+                </tr>
+            </table>
+        </article>
+	
+	<?php endwhile;
+
+else :
+	echo '<p>There are no pages!</p>';
+endif;
+
+get_footer();
+
+?>
+```
+
+
+
+Now, the only page in the entire site that will make use of this file is the page with a slug of ‘about-us’. Pretty slick!  
+![page-name-of-slug-wordpress](https://vegibit.com/wp-content/uploads/2017/06/page-name-of-slug-wordpress.gif)
+
+We can see that the About Us page is now making use of a two-column layout of sorts by way of that table.
+
+----------
+
+### How To Use Custom Page Templates To Customize Page Layout
+
+We’ve seen quite a few ways to customize the look of a page or set of pages in WordPress. Lo and Behold, we have yet more ways to customize our pages by way of custom page templates. Let’s see how we might do this.
+
+Go ahead and create a file named  **page-template.php**. In that file, we can place the following markup.
+
+```php
+<?php
+
+/**
+Template Name: Custom Page Template
+ */
+```
+
+PHP
+
+Copy
+
+Now check this out. If you visit your  [WordPress Dashboard](https://vegibit.com/wordpress-dashboard-tutorial/), click on Pages, then click on ‘Edit’ for one of the pages, you will notice that there is a new field under the Page Attributes area or the editor.  
+![page attributes template](https://vegibit.com/wp-content/uploads/2017/06/page-attributes-template.png)  
+We now have the option to choose which template to apply to this particular page. WordPress is able to detect this new template file because we gave the file a suffix of ‘template’ and we set a special property in the comments of that file. In the comments we added “Template Name: Custom Page Template” so now in the editor, we have the choice of making use of the Custom Page Template from the dropdown menu. Very cool!  
+Right now our custom page template is essentially empty, so let’s populate it like so:
+
+**page-template.php**
+
+```php
+<?php
+
+/**
+Template Name: Custom Page Template
+ */
+
+get_header();
+
+if ( have_posts() ) :
+	while ( have_posts() ) : the_post(); ?>
+		
+		<article class="page-layout">
+			<table border="0" width="100%">
+				<tr>
+					<td class="tdcontent"><?php the_content() ?></td>
+					<td class="tdtitle" width="30%"><h2><?php the_title() ?></h2></td>
+				</tr>
+			</table>
+		</article>
+	
+	<?php endwhile;
+
+else :
+	echo '<p>There are no pages!</p>';
+endif;
+
+get_footer();
+
+?>
+```
+
+PHP
+
+Copy
+
+We will also add a bit of styling to our style.css file like this:
+
+**style.css**
+
+```css
+.tdcontent {
+    border: dashed 3px #ffd35e;
+    background: #fdf5e1;
+    padding: 10px;
+}
+
+.tdtitle {
+    border: dashed 3px #2ecc71;
+    background: #d7fee8;
+    padding: 10px;
+}
+```
+
+
+
+Let us now go into the WordPress Dashboard and edit the “WordPress Example Page” page we have in our site. We will select the Custom Page Template that we have now created and click update.  
+![template set to custom page template](https://vegibit.com/wp-content/uploads/2017/06/template-set-to-custom-page-template.png)
+
+When we visit our page, we can see the custom page template has indeed been applied. What is great about this, is that we can apply this template to any page we like and at any time. It is a very flexible way to alter the layout of various pages as you see fit.  
+![custom-page-template-in-action](https://vegibit.com/wp-content/uploads/2017/06/custom-page-template-in-action.gif)
+
+----------
+
+### How To Create Custom Templates For WordPress Pages Summary
+
+In this tutorial we had a look at several different ways you can apply custom layouts and formatting to your pages in WordPress. First off, we looked at how to use conditional logic via is_page() to determine if we were on a particular page and then run special code for that page. Next up, we saw how you can create a template file with a matching slug or page id to apply a file to a specific page. Lastly we had a look at how to define custom page templates which could then be selected from the WordPress editor to apply to any post you like.
