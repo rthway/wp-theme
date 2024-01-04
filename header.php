@@ -17,3 +17,6 @@
 			<?php wp_nav_menu( $args ) ?>
         </nav>
     </header> 
+    <?php if(is_page()) : ?>
+        <h3>Thanks for visiting our page!</h3>
+	<?php endif ?>
